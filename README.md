@@ -17,11 +17,20 @@ In addition to MPD, several C++ libraries must be installed.
 
 
 ## Installation
+
+To compile from source:
 ```
 git clone 'https://github.com/k-vernooy/music-filter'
 make
 make install
 ```
+
+To install via Homebrew:
+```
+brew tap k-vernooy/tap
+brew install music-filter
+```
+
 This project is currently tested and compatible with Linux (Ubuntu) and macOS. Dependencies for the GUI and audio playing must be installed before compilation.
 
 
