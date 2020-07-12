@@ -1,3 +1,7 @@
+# VScode files
+settings.json
+bin/*
+
 # Prerequisites
 *.d
 
