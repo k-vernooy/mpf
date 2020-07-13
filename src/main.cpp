@@ -12,9 +12,14 @@ using std::endl;
  * Creates a music player, parses CLI args, and runs
  * the gui app.
  */
-int main(int argc, char** argv) {    
+int main(int argc, char** argv) {
+    // configure CLI arguments
+    ARGLIST["--config"].isInf = true;
+    ARGLIST["--filter"].numVals = 1;
+    ARGLIST["--order"].numVals = 1;
+
     // Create a music player object
-    MusicPlayer player = MusicPlayer::CreateDefaultMP();
+    MusicPlayer player = MusicPlayer();
     MPConfig globalConfig = MPConfig::ReadFromFile("~/.music-filter.config");
 
     // Parse CLI arguments, add to music player configuration
@@ -24,21 +29,22 @@ int main(int argc, char** argv) {
             CliArg arg = ARGLIST[argv[i]];
             // set to true, since flag was set
             if (arg.isBool) {
-                ARGLIST[argv[i]].boolVal = true;
+                ARGLIST[arg.name].boolVal = true;
             }
             else {
                 // arg takes infinite parameters, add all to value
                 if (arg.isInf) {
+                    i++; // increase arg count to check for vals
                     while (i != argc) {
                         // validate all passed values, add to array
-                        ARGLIST[argv[i]].validation(argv[i]);
-                        ARGLIST[argv[i]].passedValue.push_back(argv[i]);
+                        ARGLIST[arg.name].validation(argv[i]);
+                        ARGLIST[arg.name].passedValue.push_back(argv[i]);
                         i++;
                     }
 
                     // check whether the user supplied any values for arg
-                    if (ARGLIST[argv[i]].passedValue.size() == 0) {
-                        Err("fatal: " + arg.name + " expects at least 1 value passed. Exiting...");
+                    if (ARGLIST[arg.name].passedValue.size() == 0) {
+                        Err("fatal: " + arg.name + " expects at least 1 value passed.");
                         return 1;
                     }
                 }
@@ -52,8 +58,8 @@ int main(int argc, char** argv) {
                             return 1;
                         }
                         else {
-                            ARGLIST[argv[i]].validation(argv[i]);
-                            ARGLIST[argv[i]].passedValue.push_back(argv[i]);
+                            ARGLIST[arg.name].validation(argv[i]);
+                            ARGLIST[arg.name].passedValue.push_back(argv[i]);
                         }
                     }
                 }
@@ -61,7 +67,8 @@ int main(int argc, char** argv) {
         }
         else {
             // is a file, add to FilesList
-            player.files.addFile(argv[i]);
+            File file = File(argv[i]);
+            player.files.addFile(file);
         }
     }
 
@@ -74,7 +81,7 @@ int main(int argc, char** argv) {
         globalConfig.writeToFile("~/.mpf.config");
 
         // exit, because we cannot play files while configuring
-        cout << "Succesfully updated configurations. Exitting..." << endl;
+        cout << "Succesfully updated configurations." << endl;
         return 0;
     }
 
