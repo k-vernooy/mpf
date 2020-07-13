@@ -1,4 +1,6 @@
 #include <iostream>
+#include <sstream>
+#include <fstream>
 #include "../include/util.h"
 
 void Err(std::string message) {
@@ -33,4 +35,22 @@ std::string Join(std::vector<std::string> str, std::string del) {
 
     ret += str[str.size() - 1];
     return ret;
+}
+
+
+std::string ReadFile(std::string path) {
+    // initiate stream and buffer
+    std::ifstream f(path);
+    std::stringstream buffer;
+    // add the file to the buffer
+    buffer << f.rdbuf();
+    // return buffer string
+    return buffer.str();
+};
+
+
+void WriteFile(std::string contents, std::string path) {
+    std::ofstream of(path);
+    of << contents;
+    of.close();
 }

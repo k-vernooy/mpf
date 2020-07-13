@@ -31,12 +31,13 @@ class MPConfig {
     };
 
     public:
+        MPConfig() {}
         // Read and write to the ~/.music-filter.config file
-        static MPConfig ReadFromFile(std::string filePath);
-        void writeToFile(std::string filePath);  
-        void setVariable(std::string var);  
-        void setVariable(std::string var, std::string val);     
-        std::string getVariable(std::string var);
+        static MPConfig ReadFromFile(const std::string filePath);
+        void writeToFile(const std::string filePath);  
+        void setVariable(const std::string var);  
+        void setVariable(const std::string var, const std::string val);     
+        std::string getVariable(const std::string var);
 };
 
 
@@ -52,11 +53,11 @@ class CliArg {
         CliArg() {}
 
         std::string name;
-        bool isBool;
+        bool isBool = false;
         bool boolVal;
 
         int numVals;
-        int isInf;
+        int isInf = false;
 
         std::vector<std::string> passedValue;
 
@@ -76,10 +77,15 @@ enum FileFormat {
  * audio file. Can read tags from the file.
  */
 class File {
-    std::string filePath;
-    std::string readID3Tag(std::string tagName);
-    bool validate();
-    FileFormat format;
+    public:
+        File(std::string filePath)
+            : filePath(filePath) {};
+
+        std::string filePath;
+        std::string readID3Tag(const std::string tagName);
+        bool validate();
+        FileFormat getFormat();
+        friend bool operator== (const File& f1, const File& f2);
 };
 
 
@@ -95,11 +101,12 @@ class FilesList {
         FilesList() {}
 
         bool validateAllFiles();
-        void addFile(std::string);
-        void removeFile(std::string);
+        void addFile(File);
+        void removeFile(File);
         void applyFilter(std::string);
+        void applyFilterCmd(std::string, std::string, std::string);
         void applyOrder(std::string);
-        int  size();
+        std::size_t size();
 };
 
 
@@ -131,7 +138,7 @@ class MPDHandler {
  */
 class MusicPlayer {
     public:
-        static MusicPlayer CreateDefaultMP();
+        MusicPlayer() {}
         MPConfig configuration;
         FilesList files;
 

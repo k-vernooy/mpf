@@ -17,7 +17,7 @@ BUILD = build
 
 # object deps
 # gui.o render.o mpdclient.o argparse.o song.o
-OBJECTS = main.o argparse.o util.o
+OBJECTS = main.o argparse.o filesystem.o musicplayer.o util.o
 OBJECT_OUTPUTS = $(patsubst %, $(BUILD)/%, $(OBJECTS))
 
 
@@ -30,7 +30,7 @@ LIBS := $(BOOST) $(SDL)
 # Binary targets for end compilations
 #====================================
 compile: setup $(OBJECTS)
-	$(CC) $(CFLAGS) $(STDV) $(OBJECT_OUTPUTS) -o $(BIN)/music-filter
+	$(CC) $(CFLAGS) $(STDV) $(OBJECT_OUTPUTS) -o $(BIN)/mpf
 
 #=================================
 # object file targets:
