@@ -2,6 +2,9 @@
 #include "../include/mpf.h"
 #include "../include/util.h"
 
+using std::cout;
+using std::endl;
+
 void MPConfig::setVariable(std::string var, std::string val) {
     VARIABLES[var] = val;
 }
@@ -23,19 +26,36 @@ std::string MPConfig::getVariable(std::string var) {
 void MPConfig::writeToFile(std::string filepath) {
     std::string file;
     for (auto& pair : VARIABLES) {
-        file += pair.first + "=" + pair.second + "\n";
+        if (!pair.second.empty()) {
+            file += pair.first + "=" + pair.second + "\n";
+        }
     }
 
-    std::cout << file << std::endl;
-    // write file to filepath
+    WriteFile(file, filepath);
 }
 
 MPConfig MPConfig::ReadFromFile(std::string path) {
-    std::string fileStr = ReadFile(path);
+    std::vector<std::string> lines = Split(ReadFile(path), "\n");
     MPConfig config = MPConfig();
-    // **file parser happens here**
+    
+    for (std::string line : lines) {
+        ValidateConfig(line);
+        std::vector<std::string> splits = Split(line, "=");
+        std::string varToSet = splits[0];
+        std::string valToSet = Join(std::vector<std::string>(
+            splits.begin() + 1, splits.end()
+        ), "=");
+        config.setVariable(varToSet, valToSet);
+    }
+
+    for (auto& x : config.VARIABLES) {
+        if (!x.second.empty()) {
+            cout << "'" << x.first << "' = '" << x.second << "'" << endl;
+        }
+    }
     return config;
 }
+
 
 void MusicPlayer::beginGUI(MPDHandler* handler) {
     // start window

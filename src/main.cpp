@@ -1,4 +1,7 @@
 #include <iostream>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "../include/mpf.h"
 #include "../include/util.h"
@@ -28,9 +31,16 @@ int main(int argc, char** argv) {
     ARGLIST["--filter"].numVals = 1;
     ARGLIST["--order"].numVals = 1;
 
+    // read the user's home directory
+    const char *homedir;
+    if ((homedir = getenv("HOME")) == NULL)
+        homedir = getpwuid(getuid())->pw_dir;
+    std::string CONFIG_PATH = std::string(homedir) + "/.mpf.config";
+    cout << CONFIG_PATH << endl;
+
     // Create a music player object
     MusicPlayer player = MusicPlayer();
-    MPConfig globalConfig = MPConfig::ReadFromFile("~/.music-filter.config");
+    MPConfig globalConfig = MPConfig::ReadFromFile(CONFIG_PATH);
 
     // Parse CLI arguments, add to music player configuration
     for (int i = 1; i < argc; i++) {
@@ -98,7 +108,7 @@ int main(int argc, char** argv) {
         for (std::string conf : ARGLIST["--config"].passedValue) {
             globalConfig.setVariable(conf);
         }
-        globalConfig.writeToFile("~/.mpf.config");
+        globalConfig.writeToFile(CONFIG_PATH);
 
         // exit, because we cannot play files while configuring
         cout << "Succesfully updated configurations." << endl;
