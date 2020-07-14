@@ -1,12 +1,13 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 #include "../include/util.h"
+
 
 void Err(std::string message) {
     std::cerr << "\e[31merror: \e[0m" << message << std::endl;
 }
-
 
 std::vector<std::string> Split(std::string str, std::string del) {
     std::vector<std::string> array; // to be returned
@@ -53,4 +54,9 @@ void WriteFile(std::string contents, std::string path) {
     std::ofstream of(path);
     of << contents;
     of.close();
+}
+
+
+void UpperCase(std::string& str) {
+    std::transform(str.begin(), str.end(),str.begin(), ::toupper);
 }

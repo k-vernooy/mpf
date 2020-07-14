@@ -12,12 +12,19 @@ using std::endl;
  * Creates a music player, parses CLI args, and runs
  * the gui app.
  */
+std::map<std::string, CliArg> ARGLIST = {
+    {"--order", CliArg("--order", false, ValidateOrder)},
+    {"--filter", CliArg("--filter", false, ValidateFilter)},
+    {"--config", CliArg("--config", false, ValidateConfig)},
+    {"--verbose", CliArg("--verbose", true, nullptr)},
+    {"--keep", CliArg("--keep", true, nullptr)}
+};
+
 int main(int argc, char** argv) {
     // configure CLI arguments
     ARGLIST["--config"].isInf = true;
     ARGLIST["--filter"].numVals = 1;
     ARGLIST["--order"].numVals = 1;
-    ARGLIST["--verbose"] = CliArg("--verbose", true, nullptr);
 
     // Create a music player object
     MusicPlayer player = MusicPlayer();

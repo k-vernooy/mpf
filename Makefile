@@ -20,9 +20,10 @@ OBJECT_OUTPUTS = $(patsubst %, $(BUILD)/%, $(OBJECTS))
 DEPENDS := $(patsubst %.o,%.d,$(OBJECTS))
 
 # libraries
+TAGLIB := `taglib-config --cflags` `taglib-config --libs` -lz
 BOOST := -lboost_filesystem -lboost_system
 SDL := -lSDL2 -lSDL2main
-LIBS := $(BOOST) $(SDL)
+LIBS := $(BOOST) $(SDL) $(TAGLIB)
 
 all: mpf
 

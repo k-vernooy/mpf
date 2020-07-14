@@ -150,10 +150,6 @@ bool ValidateFilter(std::string arg);
 bool ValidateOrder(std::string arg);
 bool ValidateConfig(std::string arg);
 
-static std::map<std::string, CliArg> ARGLIST = {
-    {"--order", CliArg("--order", false, ValidateOrder)},
-    {"--filter", CliArg("--filter", false, ValidateFilter)},
-    {"--config", CliArg("--config", false, ValidateConfig)}
-};
+extern std::map<std::string, CliArg> ARGLIST;
 
 #endif
