@@ -8,12 +8,20 @@ bool operator== (const File& f1, const File& f2) {
     return f1.filePath == f2.filePath;
 }
 
+bool File::validate() {
+    return (boost::filesystem::exists(filePath));
+}
+
 void FilesList::addFile(File f) {
     files.push_back(f);
 }
 
 void FilesList::removeFile(File f) {
     files.erase(std::remove(files.begin(), files.end(), f), files.end());
+}
+
+File FilesList::getFile(int pos) {
+    return files[pos];
 }
 
 std::size_t FilesList::size() {

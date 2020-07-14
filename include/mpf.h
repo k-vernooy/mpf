@@ -54,7 +54,7 @@ class CliArg {
 
         std::string name;
         bool isBool = false;
-        bool boolVal;
+        bool boolVal = false;
 
         int numVals;
         int isInf = false;
@@ -101,6 +101,7 @@ class FilesList {
         FilesList() {}
 
         bool validateAllFiles();
+        File getFile(int pos);
         void addFile(File);
         void removeFile(File);
         void applyFilter(std::string);

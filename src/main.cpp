@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
     ARGLIST["--config"].isInf = true;
     ARGLIST["--filter"].numVals = 1;
     ARGLIST["--order"].numVals = 1;
+    ARGLIST["--verbose"] = CliArg("--verbose", true, nullptr);
 
     // Create a music player object
     MusicPlayer player = MusicPlayer();
@@ -68,6 +69,11 @@ int main(int argc, char** argv) {
         else {
             // is a file, add to FilesList
             File file = File(argv[i]);
+            if (!file.validate()) {
+                Err("fatal: " + file.filePath + " is neither a valid argument or file.");
+                return 1;
+            }
+
             player.files.addFile(file);
         }
     }
@@ -127,6 +133,11 @@ int main(int argc, char** argv) {
     if (!orderStr.empty())
         player.files.applyOrder(orderStr);
 
+    if (ARGLIST["--verbose"].boolVal) {
+        for (size_t i = 0; i < player.files.size(); i++) {
+            cout << player.files.getFile(i).filePath << endl;
+        }
+    }
     MPDHandler mpd = MPDHandler(player.files);
     player.beginGUI(&mpd);
 }
