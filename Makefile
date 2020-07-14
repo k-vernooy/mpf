@@ -1,43 +1,43 @@
-.PHONY: all
-.ONESHELL: all
+.PHONY: setup clean
+.ONESHELL: setup clean
 
 #==================================
 # Define variables
 #==================================
 
 # compiler options
-CC := g++
+CXX := g++
 OFLAGS := -O2
-CFLAGS := $(OFLAGS) -Wall -pedantic -Wextra
+CXXFLAGS := $(OFLAGS) -Wall -pedantic -Wextra
 STDV := -std=c++11
-
-# filepaths
 BIN := bin
 BUILD = build
+SRC = src
 
 # object deps
-# gui.o render.o mpdclient.o argparse.o song.o
 OBJECTS = main.o argparse.o filesystem.o musicplayer.o util.o
 OBJECT_OUTPUTS = $(patsubst %, $(BUILD)/%, $(OBJECTS))
-
+DEPENDS := $(patsubst %.o,%.d,$(OBJECTS))
 
 # libraries
 BOOST := -lboost_filesystem -lboost_system
 SDL := -lSDL2 -lSDL2main
 LIBS := $(BOOST) $(SDL)
 
+all: mpf
+
 #====================================
 # Binary targets for end compilations
 #====================================
-compile: setup $(OBJECTS)
-	$(CC) $(CFLAGS) $(STDV) $(OBJECT_OUTPUTS) -o $(BIN)/mpf
+mpf: setup $(OBJECT_OUTPUTS)
+	$(CXX) $(CXXFLAGS) $(STDV) $(OBJECT_OUTPUTS) $(LIBS) -o $(BIN)/mpf
 
 #=================================
 # object file targets:
 #=================================
 
-%.o: src/%.cpp
-	$(CC) $(OFLAGS) $(STDV) $< -c -o $(BUILD)/$@
+$(BUILD)/%.o: $(SRC)/%.cpp
+	$(CXX) $(OFLAGS) $(STDV) -MMD -MP -MT $@ $< -c -o $@
 
 
 #===================================
