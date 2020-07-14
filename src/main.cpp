@@ -17,7 +17,9 @@ std::map<std::string, CliArg> ARGLIST = {
     {"--filter", CliArg("--filter", false, ValidateFilter)},
     {"--config", CliArg("--config", false, ValidateConfig)},
     {"--verbose", CliArg("--verbose", true, nullptr)},
-    {"--keep", CliArg("--keep", true, nullptr)}
+    {"--keep", CliArg("--keep", true, nullptr)},
+    {"--loop", CliArg("--loop", true, nullptr)},
+    {"--version", CliArg("--version", true, nullptr)}
 };
 
 int main(int argc, char** argv) {
@@ -83,6 +85,11 @@ int main(int argc, char** argv) {
 
             player.files.addFile(file);
         }
+    }
+
+    if (ARGLIST["--version"].boolVal) {
+        cout << MPF_VERSION << endl;
+        return 0;
     }
 
     // if the configuration has been modified, update the global

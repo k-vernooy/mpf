@@ -26,6 +26,7 @@ std::string File::readID3Tag(std::string tag) {
 
     if (!f.isNull() && f.file()) {
         TagLib::PropertyMap tags = f.file()->properties();
+
         if (tags.find(tag) != tags.end()) {
             if (tags[tag].size() > 1) Err("lots of vals");
             return std::string(tags[tag][0].toCString());
@@ -63,13 +64,52 @@ void FilesList::applyFilterCmd(std::string lv, std::string rv, std::string compa
     for (size_t i = 0; i < files.size(); i++) {
         std::string tagVal = files[i].readID3Tag(lv);
         UpperCase(tagVal);
+        bool keepFile = true;
+
         if (!tagVal.empty()) {
-            cout << tagVal << ", " << rv << ", " << comparator << endl;
+            // if (IsNumber(tagVal))
+            if (comparator == "==") {
+                keepFile = (tagVal == rv);
+            }
+            else {
+                if (IsNumber(tagVal) && IsNumber(rv)) {
+                    // Convert to the appropriate type
+                    double ld = stod(tagVal);
+                    double rd = stod(rv);
+
+                    // perform comparison
+                    if (comparator == "<")
+                        keepFile = ld < rd;
+                    else if (comparator == ">")
+                        keepFile = ld > rd;
+                    else if (comparator == ">=")
+                        keepFile = ld >= rd;
+                    else if (comparator == "<=")
+                        keepFile = ld <= rd;
+                }
+                else if (!IsNumber(tagVal) && !IsNumber(rv)) {
+                    // perform alphabetical check
+                    if (comparator == ">")
+                        keepFile = tagVal > rv;
+                    else if (comparator == "<")
+                        keepFile = tagVal < rv;
+                    else if (comparator == ">=")
+                        keepFile = tagVal >= rv;
+                    else if (comparator == "<=")
+                        keepFile = tagVal <= rv;
+                }
+                else {
+                    Err("fatal: cannot compare with quantity operators (<, >, <=, >=) a numeric lv and a string rv, or vice versa.");
+                    exit(1);
+                }
+            }
         }
-        else if (ARGLIST["--keep"].boolVal)
-            continue;
-        else
+        else if (!ARGLIST["--keep"].boolVal)
+            keepFile = false;
+        
+        if (!keepFile) {
             removeFile(files[i]);
+        }
     }
     return;
 }

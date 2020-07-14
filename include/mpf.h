@@ -1,6 +1,8 @@
 #ifndef MPF_H
 #define MPF_H
 
+#define MPF_VERSION "mpf 0.0.1"
+
 #include <string>
 #include <vector>
 #include <map>

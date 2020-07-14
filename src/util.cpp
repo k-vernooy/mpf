@@ -2,6 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <regex>
 #include "../include/util.h"
 
 
@@ -59,4 +60,9 @@ void WriteFile(std::string contents, std::string path) {
 
 void UpperCase(std::string& str) {
     std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+}
+
+bool IsNumber(std::string token) {
+    // checks if a string is any number type
+    return std::regex_match(token, std::regex(("((\\+|-)?[[:digit:]]+)(\\.(([[:digit:]]+)?))?")));
 }
