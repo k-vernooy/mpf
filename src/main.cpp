@@ -36,7 +36,6 @@ int main(int argc, char** argv) {
     if ((homedir = getenv("HOME")) == NULL)
         homedir = getpwuid(getuid())->pw_dir;
     std::string CONFIG_PATH = std::string(homedir) + "/.mpf.config";
-    cout << CONFIG_PATH << endl;
 
     // Create a music player object
     MusicPlayer player = MusicPlayer();
@@ -129,6 +128,9 @@ int main(int argc, char** argv) {
             if (FileSystem::ValidateDirectory(defaultDir)) {
                 // set the FilesList in `player` to all files in defaultDir
                 player.files = FileSystem::GetAllFiles(defaultDir);
+                if (player.files.size() == 0) {
+                    Err("fatal: No files in DEFAULT_DIR");
+                }
             }
             else {
                 Err("fatal: Default directory '" + defaultDir + "' does not exist.");
@@ -158,10 +160,10 @@ int main(int argc, char** argv) {
         player.files.applyOrder(orderStr);
 
     if (ARGLIST["--verbose"].boolVal) {
-        for (size_t i = 0; i < player.files.size(); i++) {
-            cout << player.files.getFile(i).filePath << endl;
-        }
+        cout << "Ordered/Filtered files:";
+        player.files.print();
     }
-    MPDHandler mpd = MPDHandler(player.files);
-    player.beginGUI(&mpd);
+
+    GUI gui = GUI();
+    gui.beginGUI(player);
 }

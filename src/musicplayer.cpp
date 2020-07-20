@@ -1,6 +1,13 @@
 #include <iostream>
+
 #include "../include/mpf.h"
 #include "../include/util.h"
+
+// Using SDL and standard IO
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+
 
 using std::cout;
 using std::endl;
@@ -48,19 +55,5 @@ MPConfig MPConfig::ReadFromFile(std::string path) {
         config.setVariable(varToSet, valToSet);
     }
 
-    for (auto& x : config.VARIABLES) {
-        if (!x.second.empty()) {
-            cout << "'" << x.first << "' = '" << x.second << "'" << endl;
-        }
-    }
     return config;
-}
-
-
-void MusicPlayer::beginGUI(MPDHandler* handler) {
-    // start window
-    // load basic gui
-    // wait events
-    // send and recieve updates to mpd.
-    return;
 }
