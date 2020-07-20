@@ -18,6 +18,7 @@ class MPConfig;
 class FilesList;
 class File;
 class AudioFile;
+class GUI;
 
 
 /**
@@ -73,7 +74,7 @@ class CliArg {
 
 
 // All file formats supported by mpf
-enum FileFormat {
+enum class AudioFormat {
     MP3, WAV, OGG
 };
 
@@ -88,17 +89,28 @@ class File {
             : filePath(filePath) {};
 
         std::string filePath;
-        std::string readID3Tag(const std::string tagName);
         bool validate();
         std::string getFileName(bool stem = false);
-        FileFormat getFormat();
         friend bool operator== (const File& f1, const File& f2);
 };
 
 
+/**
+ * @extends File
+ * A class representing an audio file of
+ * any format. Can read samples, metadata
+ * and imbedded images.
+ */
 class AudioFile : public File {
-    void play();
-    void readSamples();
+private:
+    Mix_Music* data;
+
+public:
+    AudioFormat getFormat();
+    std::string readID3Tag(const std::string tagName);
+    void beginPlayback(double start);
+    void readData();
+    SDL_Surface* readImage();
 };
 
 /**
@@ -139,12 +151,12 @@ class FileSystem {
  * to MPD using a separate driver.
  */
 class MusicPlayer {
-    public:
-        MusicPlayer() {}
-        MPConfig configuration;
-        FilesList files;
+public:
+    MusicPlayer() {}
+    MPConfig configuration;
+    FilesList files;
 
-        void beginGUI();
+    friend class GUI;
 };
 
 bool ValidateFilter(std::string arg);
@@ -159,13 +171,44 @@ extern std::map<std::string, CliArg> ARGLIST;
  * rasterizing objects, and classes for catching/handling
  * mouse down events (buttons)
  */
-namespace GUI {
-    // Draws a rectangle with an integer border radius to the renderer
-    void SDL_DrawRoundedRect(SDL_Renderer*, const SDL_Rect*, const int);
+class GUI {
+private:
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Surface* screenSurface;
+    SDL_Surface* backgroundImage;
+
+    Uint32 fProgress;
+    Uint32 fDuration;
+
+    int FPS;
+    bool isActive;
+    bool musicPaused;
+
+
+    void clear();
+    void renderFrame();
+    void advanceFile();
+    void playAudio();
+    void pauseAudio();
+    void isPlayingAudio();
+
+public:
+    GUI(int FPS = 20)
+        : isActive(false), musicPaused(false), FPS(FPS) {}
     
-    class SDL_Button {
-        SDL_Button();
-        void handleEvt(SDL_Event* evt);
-    };
+    void beginGUI(MusicPlayer mp);
+    static void SDL_DrawCircle(SDL_Renderer*, const int, const int, const int);
+    static void SDL_DrawRoundedRect(SDL_Renderer*, const SDL_Rect*, const int);
+    void init(); // Initializes SDL, window, mixer
+
 }
+
+
+class SDL_Button {
+    SDL_Button(void(*callback)(GUI));
+    void handleEvt(SDL_Event* evt);
+    void (*callback)(GUI*);
+};
+
 #endif
