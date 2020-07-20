@@ -4,8 +4,6 @@
 #==================================
 # Define variables
 #==================================
-
-# compiler options
 CXX := g++
 OFLAGS := -O2
 CXXFLAGS := $(OFLAGS) -Wall -pedantic -Wextra
@@ -15,14 +13,14 @@ BUILD = build
 SRC = src
 
 # object deps
-OBJECTS = main.o argparse.o filesystem.o musicplayer.o util.o
+OBJECTS = main.o argparse.o filesystem.o musicplayer.o util.o gui.o
 OBJECT_OUTPUTS = $(patsubst %, $(BUILD)/%, $(OBJECTS))
 DEPENDS := $(patsubst %.o,%.d,$(OBJECTS))
 
 # libraries
 TAGLIB := `taglib-config --cflags` `taglib-config --libs` -lz
 BOOST := -lboost_filesystem -lboost_system
-SDL := -lSDL2 -lSDL2main
+SDL := `sdl2-config --cflags` `sdl2-config --libs` -lSDL2_image -lSDL2_mixer
 LIBS := $(BOOST) $(SDL) $(TAGLIB)
 
 all: mpf
