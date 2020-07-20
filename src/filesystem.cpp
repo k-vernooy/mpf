@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <random>
 
 // mpf class + method declarations
 #include "../include/mpf.h"
@@ -8,7 +9,9 @@
 // for reading tag metadata
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
+#include <taglib/id3v2tag.h>
 #include <taglib/tpropertymap.h>
+
 
 using std::cout;
 using std::endl;
@@ -21,30 +24,21 @@ bool File::validate() {
     return (boost::filesystem::exists(filePath));
 }
 
-std::string File::readID3Tag(std::string tag) {
-    TagLib::FileRef f(filePath.c_str());
-
-    if (!f.isNull() && f.file()) {
-        TagLib::PropertyMap tags = f.file()->properties();
-
-        if (tags.find(tag) != tags.end()) {
-            if (tags[tag].size() > 1) Err("lots of vals");
-            return std::string(tags[tag][0].toCString());
-        }
-        else {
-            Err("Tag '" + tag + "' is not available in file '" + filePath + "'");
-            return "";
-        }
+std::string File::getFileName(bool stem) {
+    boost::filesystem::path p(this->filePath);
+    if (!stem) {
+        return std::string(p.filename().c_str());
     }
     else {
-        Err("uncaught error reading tag '" + tag + "'");
-        return "";
+        return std::string(p.stem().c_str());
     }
 }
+
 
 void FilesList::addFile(File f) {
     files.push_back(f);
 }
+
 
 void FilesList::removeFile(File f) {
     files.erase(std::remove(files.begin(), files.end(), f), files.end());
@@ -139,14 +133,36 @@ void FilesList::applyFilter(std::string filter) {
 }
 
 void FilesList::applyOrder(std::string orderCmd) {
-    return;
+    if (files.size() == 0) return;
+    if (orderCmd == "shuffle") {
+        // shuffle the `files` vector
+        File firstFile = *files.begin();
+        if (files.size() > 1) {
+            // loop shuffling to avoid replaying the same song twice
+            do {
+                std::shuffle(files.begin(), files.end(), std::random_device());
+            } while (*files.begin() == firstFile);
+        }
+        return;
+    }
 }
+
+
+void FilesList::print() {
+    cout << "[";
+    for (File x : files) {
+        cout << x.filePath << ", ";
+    }
+    cout << "\b\b] " << endl;
+}
+
 
 FilesList FileSystem::GetAllFiles(Directory) {
     FilesList files;
     // create boost path; iterate over files
     return files;
 }
+
 
 bool FileSystem::ValidateDirectory(Directory dir) {
     return true;
