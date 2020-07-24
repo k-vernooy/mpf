@@ -1,3 +1,13 @@
+/****************************************
+ * @file                          mpf.cpp
+ * @author                      k-vernooy
+ * 
+ * Single include file for all source
+ * mpf files; contains any classes, enums
+ * or structs for file reading and
+ * interface implementation (CLI/GUI)
+ ***************************************/
+
 #ifndef MPF_H
 #define MPF_H
 
@@ -30,15 +40,15 @@ class MPConfig {
     // A list of blank variables, to be read from
     // config files or to be specified at runtime
     std::map<std::string, std::string> VARIABLES = {
-        {"DEFAULT_DIR", ""},
-        {"DEFAULT_FILTER", ""},
-        {"DEFAULT_ORDER", ""},
+        {"MUSIC_DIR", ""},
         {"FILTER", ""},
         {"ORDER", ""}
     };
 
     public:
         MPConfig() {}
+        MPConfig(CliArgMap args);
+
         // Read and write to the ~/.music-filter.config file
         static MPConfig ReadFromFile(const std::string filePath);
         void writeToFile(const std::string filePath);  
@@ -145,20 +155,6 @@ class FileSystem {
 };
 
 
-/**
- * The music player. Lists the playable files,
- * filters the files, opens a gui, and sends information
- * to MPD using a separate driver.
- */
-class MusicPlayer {
-public:
-    MusicPlayer() {}
-    MPConfig configuration;
-    FilesList files;
-
-    friend class GUI;
-};
-
 bool ValidateFilter(std::string arg);
 bool ValidateOrder(std::string arg);
 bool ValidateConfig(std::string arg);
@@ -166,43 +162,63 @@ bool ValidateConfig(std::string arg);
 extern std::map<std::string, CliArg> ARGLIST;
 
 
-/**
- * Assorted GUI methods for handling draw calls,
- * rasterizing objects, and classes for catching/handling
- * mouse down events (buttons)
- */
-class GUI {
-private:
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    SDL_Surface* screenSurface;
-    SDL_Surface* backgroundImage;
-
-    Uint32 fProgress;
-    Uint32 fDuration;
+class AudioApp {
+protected:
+    double fProgress;
+    double fDuration;
 
     int FPS;
     bool isActive;
     bool musicPaused;
 
-
-    void clear();
-    void renderFrame();
     void advanceFile();
     void playAudio();
     void pauseAudio();
     void isPlayingAudio();
 
+    MPConfig config;
+    FilesList files;
+
+    void filterFiles();
+    void orderFiles();
+
 public:
-    GUI(int FPS = 20)
-        : isActive(false), musicPaused(false), FPS(FPS) {}
+    AudioApp(MPConfig config, FilesList files)
+        : config(config), files(files) {}
+};
+
+
+/**
+ * Assorted GUI methods for handling draw calls,
+ * rasterizing objects, and classes for catching/handling
+ * mouse down events (buttons)
+ */
+class GUI : public AudioApp {
+private:
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Surface* screenSurface;
+    SDL_Surface* backgroundImage;
+    int FPS;
+
+    void clear();
+    void renderFrame();
+    void init();
+
+public:
+    GUI(MPConfig config, FilesList files, int FPS = 20)
+        : AudioApp(config, files), isActive(false), musicPaused(false), FPS(FPS) {}
+
+    void run();
     
-    void beginGUI(MusicPlayer mp);
+    /**
+     * Static graphics methods that draw to SDL_Rendereres
+     * and rasterize various necessary GUI components (circles, rounded rects).
+     * SDL_SetRenderDrawColor should be set before calling these.
+     */
     static void SDL_DrawCircle(SDL_Renderer*, const int, const int, const int);
     static void SDL_DrawRoundedRect(SDL_Renderer*, const SDL_Rect*, const int);
-    void init(); // Initializes SDL, window, mixer
-
-}
+};
 
 
 class SDL_Button {
