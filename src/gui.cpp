@@ -1,3 +1,12 @@
+/****************************************
+ * @file                          gui.cpp
+ * @author                      k-vernooy
+ * 
+ * Code for displaying a GUI, handling
+ * events, and playing back audio via
+ * SDL_Mixer
+ ***************************************/
+
 #include "../include/mpf.h"
 
 
@@ -60,33 +69,42 @@ void GUI::isPlayingAudio() {
     return (Mix_PlayingMusic() || musicPaused)
 }
 
-void GUI::beginGUI() {
+
+void GUI::renderFrame() {
+    // clear renderer
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(render);
+}
+
+
+void GUI::beginGUI(MusicPlayer* player) {
     this->init();
     while (!isActive) {
         // render the current state
         renderFrame();
 
-        // handle all events
-        SDL_Event evt;
-        while (SDL_PollEvent(*evt)) {
+        // // handle all events
+        // SDL_Event evt;
+        // while (SDL_PollEvent(*evt)) {
             
-        }
+        // }
 
-        // check if we need to start a new song
-        if (!isPlayingAudio()) {
-            if (!advanceFile()) {
-                cout << "Completed all files." << endl;
-                isActive = false;
-            }
-            else {
-                // begin playback of new audio file
-            }
-        }
+        // // check if we need to start a new song
+        // if (!isPlayingAudio()) {
+        //     if (!advanceFile()) {
+        //         cout << "Completed all files." << endl;
+        //         isActive = false;
+        //     }
+        //     else {
+        //         // begin playback of new audio file
+        //     }
+        // }
 
         // sleep FPS
+        usleep(500);
     }
 
-    SDL_UpdateWindowSurface(window);
+    // SDL_UpdateWindowSurface(window);
     SDL_DestroyWindow(window);
     SDL_Quit();
 

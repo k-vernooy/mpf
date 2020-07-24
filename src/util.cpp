@@ -10,6 +10,10 @@ void Err(std::string message) {
     std::cerr << "\e[31merror: \e[0m" << message << std::endl;
 }
 
+void Log(std::string message) {
+    std::cout << "mpf: " << message << std::endl;
+}
+
 std::vector<std::string> Split(std::string str, std::string del) {
     std::vector<std::string> array; // to be returned
     int pos = 0;
