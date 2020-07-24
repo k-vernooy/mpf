@@ -40,7 +40,7 @@ Binary distributions will be available once a stable version is released. This p
 `mpf` is designed to be a simple visual player. It is invoked from the command line, passed a list of files, and through CLI flags filters/orders them. Upon succesful completion of all songs in the passed list, it exits the GUI app.
 
 ### Filtering
-Metadata tags set within the input files are used to filter the music. In `mpf`, the `--filter` option is used to select subsets of your input files. *If `mpf` has trouble reading tags present in the audio, please submit an issue with the file attached*.
+Metadata tags set within the input files are used to filter the music. In `mpf`, the `--filter` option is used to select subsets of your input files. *If `mpf` has trouble reading tags present in the audio, please submit an issue with the file attached along with the command used to run `mpf`*.
 
 Specific tag names can be used to filter music. Basic comperators are: `==`, `>`, `<`, `<=`, `>=`.
 Here's an example of playing all music in a directory by the composer Bach that was composed beyond 1730:
@@ -56,10 +56,10 @@ mpf * --order "YEAR;ASCENDING"
 mpf * --order shuffle
 ```
 ### Other Flags
-`--loop`: Used to loop the playlist. If `--shuffle` is set, the list is reshuffled.
-`--keep`: Within filtering, keep songs where the tag to be filtered by is not set.
-`--no-gui`: Run the cli version of the app
-`--theme <theme>`: Set the [GUI skin](https://example.com)
+- `--loop`: Used to loop the playlist. If `--shuffle` is set, the list is reshuffled.
+- `--keep`: Within filtering, keep songs where the tag to be filtered by is not set.
+- `--no-gui`: Run the cli version of the app
+- `--theme <theme>`: Set the [GUI skin](https://example.com)
 
 ### Configuration
 Configurations are handled in two ways. They can be passed direcly to `mpf` with the `--config` option, or can be set by creating or modifying a `~/.mpf.config` file.
