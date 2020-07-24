@@ -1,3 +1,13 @@
+/****************************************
+ * @file                         main.cpp
+ * @author                      k-vernooy
+ * 
+ * Driver for mpf - handles command line
+ * arguments, creates MusicPlayer and
+ * AudioApp objects to begin playback
+ ***************************************/
+
+
 #include <iostream>
 #include <unistd.h>
 #include <sys/types.h>
@@ -10,11 +20,7 @@ using std::cout;
 using std::endl;
 
 
-/**
- * The main driver for the entire program
- * Creates a music player, parses CLI args, and runs
- * the gui app.
- */
+// set up the CLI arguments list
 std::map<std::string, CliArg> ARGLIST = {
     {"--order", CliArg("--order", false, ValidateOrder)},
     {"--filter", CliArg("--filter", false, ValidateFilter)},
@@ -22,8 +28,10 @@ std::map<std::string, CliArg> ARGLIST = {
     {"--verbose", CliArg("--verbose", true, nullptr)},
     {"--keep", CliArg("--keep", true, nullptr)},
     {"--loop", CliArg("--loop", true, nullptr)},
-    {"--version", CliArg("--version", true, nullptr)}
+    {"--version", CliArg("--version", true, nullptr)},
+    {"--no-gui", CliArg("--no-gui", true, nullptr)}
 };
+
 
 int main(int argc, char** argv) {
     // configure CLI arguments
@@ -37,9 +45,9 @@ int main(int argc, char** argv) {
         homedir = getpwuid(getuid())->pw_dir;
     std::string CONFIG_PATH = std::string(homedir) + "/.mpf.config";
 
-    // Create a music player object
-    MusicPlayer player = MusicPlayer();
-    MPConfig globalConfig = MPConfig::ReadFromFile(CONFIG_PATH);
+    // Create a files list and configurations object
+    MPConfig config = MPConfig::ReadFromFile(CONFIG_PATH);
+    FilesList files = FilesList();
 
     // Parse CLI arguments, add to music player configuration
     for (int i = 1; i < argc; i++) {
@@ -92,10 +100,11 @@ int main(int argc, char** argv) {
                 return 1;
             }
 
-            player.files.addFile(file);
+            files.addFile(file);
         }
     }
 
+    // If the user asks to see version, print macro
     if (ARGLIST["--version"].boolVal) {
         cout << MPF_VERSION << endl;
         return 0;
@@ -105,65 +114,55 @@ int main(int argc, char** argv) {
     // configuration object and write it back to ~/.mpf.config
     if (ARGLIST["--config"].passedValue.size() != 0) {
         for (std::string conf : ARGLIST["--config"].passedValue) {
-            globalConfig.setVariable(conf);
+            config.setVariable(conf);
         }
-        globalConfig.writeToFile(CONFIG_PATH);
+        config.writeToFile(CONFIG_PATH);
 
         // exit, because we cannot play files while configuring
-        cout << "Succesfully updated configurations." << endl;
+        Log("Succesfully updated configurations.");
         return 0;
     }
 
-    player.configuration = globalConfig;
-    
-    // if the player has no files, check for a default dir
-    if (player.files.size() == 0) {
-        std::string defaultDir = player.configuration.getVariable("DEFAULT_DIR");
+
+    /**
+     * If the files object contains no files, check
+     * to see if the user has a default dir. Validate dir,
+     * set files to contents of dir
+     */
+    if (files.size() == 0) {
+        std::string defaultDir = config.getVariable("MUSIC_DIR");
         if (defaultDir.empty()) {
-            Err("fatal: No files provided and no DEFAULT_DIR set.");
+            Err("fatal: No files provided and no MUSIC_DIR set.");
+            Err("hint: Input file(s) or see `--config`");
             return 1;
         }
         else {
             // validate defaultDir
             if (FileSystem::ValidateDirectory(defaultDir)) {
                 // set the FilesList in `player` to all files in defaultDir
-                player.files = FileSystem::GetAllFiles(defaultDir);
-                if (player.files.size() == 0) {
-                    Err("fatal: No files in DEFAULT_DIR");
+                files = FileSystem::GetAllFiles(defaultDir);
+                if (files.size() == 0) {
+                    Err("fatal: No files in MUSIC_DIR");
                 }
             }
             else {
-                Err("fatal: Default directory '" + defaultDir + "' does not exist.");
+                Err("fatal: Music directory '" + defaultDir + "' does not exist.");
                 return 1;
             }
         }
     }
-
-    // determine filter to use
-    std::string filterStr;
-    if (ARGLIST["--filter"].passedValue.size() != 0)
-        filterStr = ARGLIST["--filter"].passedValue[0];
-    else if (!player.configuration.getVariable("DEFAULT_FILTER").empty())
-        filterStr = player.configuration.getVariable("DEFAULT_FILTER");
     
-    // apply filter if given
-    if (!filterStr.empty())
-        player.files.applyFilter(filterStr);
+    // If we have been passed something other than default vals,
+    // input them into the config object for use in the AudioApp
+    if (ARGLIST["--filter"].passedValue.size() != 0)
+        config["FILTER"] = ARGLIST["--filter"].passedValue[0];
 
-    std::string orderStr;
     if (ARGLIST["--order"].passedValue.size() != 0)
-        orderStr = ARGLIST["--order"].passedValue[0];
-    else if (!player.configuration.getVariable("DEFAULT_ORDER").empty())
-        orderStr = player.configuration.getVariable("DEFAULT_ORDER");
+        config["ORDER"] = ARGLIST["--order"].passedValue[0];
 
-    if (!orderStr.empty())
-        player.files.applyOrder(orderStr);
 
-    if (ARGLIST["--verbose"].boolVal) {
-        cout << "Ordered/Filtered files:";
-        player.files.print();
+    if (!ARGLIST["--no-gui"].boolVal) {
+        GUI gui = GUI();
+        gui.beginGUI(&player);
     }
-
-    GUI gui = GUI();
-    gui.beginGUI(player);
 }
