@@ -47,7 +47,6 @@ class MPConfig {
 
     public:
         MPConfig() {}
-        MPConfig(CliArgMap args);
 
         // Read and write to the ~/.music-filter.config file
         static MPConfig ReadFromFile(const std::string filePath);
@@ -116,8 +115,10 @@ private:
     Mix_Music* data;
 
 public:
+    AudioFile(std::string fp)
+        : File(fp) {};
     AudioFormat getFormat();
-    std::string readID3Tag(const std::string tagName);
+    std::string readTag(const std::string tagName);
     void beginPlayback(double start);
     void readData();
     SDL_Surface* readImage();
@@ -128,20 +129,22 @@ public:
  * Can be filtered and ordered by ID3v2 tags using id3lib
  */
 class FilesList {
-    std::vector<File> files;
+    std::vector<AudioFile> files;
     static bool ValidateFile(std::string);
 
     public:
         FilesList() {}
 
         bool validateAllFiles();
-        File getFile(int pos);
-        void addFile(File);
-        void removeFile(File);
+        AudioFile getFile(int pos);
+        void addFile(AudioFile);
+        void removeFile(AudioFile);
         void applyFilter(std::string);
         void applyFilterCmd(std::string, std::string, std::string);
         void applyOrder(std::string);
         void print();
+        std::vector<AudioFile>::iterator begin();
+        std::vector<AudioFile>::iterator end();
         std::size_t size();
 };
 
@@ -171,20 +174,21 @@ protected:
     bool isActive;
     bool musicPaused;
 
-    void advanceFile();
+    bool advanceFile();
     void playAudio();
     void pauseAudio();
-    void isPlayingAudio();
+    bool isPlayingAudio();
 
     MPConfig config;
     FilesList files;
+    int currentFile;
 
     void filterFiles();
     void orderFiles();
 
 public:
     AudioApp(MPConfig config, FilesList files)
-        : config(config), files(files) {}
+        : config(config), files(files), isActive(false), musicPaused(false) {}
 };
 
 
@@ -207,7 +211,9 @@ private:
 
 public:
     GUI(MPConfig config, FilesList files, int FPS = 20)
-        : AudioApp(config, files), isActive(false), musicPaused(false), FPS(FPS) {}
+        : FPS(FPS), AudioApp(config, files) {
+        currentFile = -1;
+    }
 
     void run();
     
@@ -220,6 +226,12 @@ public:
     static void SDL_DrawRoundedRect(SDL_Renderer*, const SDL_Rect*, const int);
 };
 
+
+class CLI : public AudioApp {
+    public:
+        CLI(MPConfig config, FilesList files)
+            : AudioApp(config, files) {};
+};
 
 class SDL_Button {
     SDL_Button(void(*callback)(GUI));
