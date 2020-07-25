@@ -35,16 +35,16 @@ std::string File::getFileName(bool stem) {
 }
 
 
-void FilesList::addFile(File f) {
+void FilesList::addFile(AudioFile f) {
     files.push_back(f);
 }
 
 
-void FilesList::removeFile(File f) {
+void FilesList::removeFile(AudioFile f) {
     files.erase(std::remove(files.begin(), files.end(), f), files.end());
 }
 
-File FilesList::getFile(int pos) {
+AudioFile FilesList::getFile(int pos) {
     return files[pos];
 }
 
@@ -52,11 +52,23 @@ std::size_t FilesList::size() {
     return files.size();
 }
 
+std::string AudioFile::readTag(std::string tag) {
+    return "";
+}
+
+std::vector<AudioFile>::iterator FilesList::begin() {
+    return files.begin();
+}
+
+std::vector<AudioFile>::iterator FilesList::end() {
+    return files.end();
+}
+
 void FilesList::applyFilterCmd(std::string lv, std::string rv, std::string comparator) {
     UpperCase(lv); UpperCase(rv);
 
     for (size_t i = 0; i < files.size(); i++) {
-        std::string tagVal = files[i].readID3Tag(lv);
+        std::string tagVal = files[i].readTag(lv);
         UpperCase(tagVal);
         bool keepFile = true;
 

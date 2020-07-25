@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
         }
         else {
             // is a file, add to FilesList
-            File file = File(argv[i]);
+            AudioFile file = AudioFile(argv[i]);
             if (!file.validate()) {
                 Err("fatal: " + file.filePath + " is neither a valid argument or file.");
                 return 1;
@@ -155,14 +155,12 @@ int main(int argc, char** argv) {
     // If we have been passed something other than default vals,
     // input them into the config object for use in the AudioApp
     if (ARGLIST["--filter"].passedValue.size() != 0)
-        config["FILTER"] = ARGLIST["--filter"].passedValue[0];
-
+        config.setVariable("FILTER", ARGLIST["--filter"].passedValue[0]);
     if (ARGLIST["--order"].passedValue.size() != 0)
-        config["ORDER"] = ARGLIST["--order"].passedValue[0];
-
+        config.setVariable("ORDER", ARGLIST["--order"].passedValue[0]);
 
     if (!ARGLIST["--no-gui"].boolVal) {
-        GUI gui = GUI();
-        gui.beginGUI(&player);
+        GUI gui = GUI(config, files, 30);
+        gui.run();
     }
 }
