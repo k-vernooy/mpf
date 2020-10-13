@@ -20,7 +20,7 @@ DEPENDS := $(patsubst %.o,%.d,$(OBJECTS))
 # libraries
 TAGLIB := `taglib-config --cflags` `taglib-config --libs` -lz
 BOOST := -lboost_filesystem -lboost_system
-SDL := `sdl2-config --cflags` `sdl2-config --libs` -lSDL2_image -lSDL2_mixer
+SDL := `sdl2-config --cflags` `sdl2-config --libs` -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 LIBS := $(BOOST) $(SDL) $(TAGLIB)
 
 all: mpf

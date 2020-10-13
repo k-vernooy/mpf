@@ -35,7 +35,6 @@ brew install mpf
 
 Binary distributions will be available once a stable version is released. This project is currently tested and compatible with Linux (Ubuntu) and macOS. Dependencies for the GUI and audio playing must be installed before compilation.
 
-
 ## Usage
 `mpf` is designed to be a simple visual player. It is invoked from the command line, passed a list of files, and through CLI flags filters/orders them. Upon succesful completion of all songs in the passed list, it exits the GUI app.
 
@@ -48,6 +47,8 @@ Here's an example of playing all music in a directory by the composer Bach that 
 mpf * --filter "COMPOSER==Bach;YEAR>1730"
 ```
 Each filter is separated by the `;` character, and are performed in sequence. String equality is case insensitive; string quantity comparison is alphabetical.
+
+The basic logic operators, `&&` and `||` may also be used to perform more complex filtering. Parenthesis `()` may be used to group expressions where necessary.
 
 ### Ordering
 By default, `mpf` orders music by the order in which it is input. For other ordering operations, the `--order` flag may be invoked. It may either be passed "shuffle", or a tag name and the order (ASCENDING [0] or DESCENDING [1]). Strings are ordered alphabetically. Example:
