@@ -23,8 +23,7 @@
 #include <SDL2/SDL_image.h>
 
 class CliArg;
-class MusicPlayer;
-class MPConfig;
+class Config;
 class FilesList;
 class File;
 class AudioFile;
@@ -32,11 +31,11 @@ class GUI;
 
 
 /**
- * A class representing a MusicPlayer configuration.
+ * A class representing an AudioApp configuration.
  * Contains default variables, as well as
  * filter and order vars used instantially.
  */
-class MPConfig {
+class Config {
     // A list of blank variables, to be read from
     // config files or to be specified at runtime
     std::map<std::string, std::string> VARIABLES = {
@@ -46,14 +45,12 @@ class MPConfig {
     };
 
     public:
-        MPConfig() {}
-
-        // Read and write to the ~/.music-filter.config file
-        static MPConfig ReadFromFile(const std::string filePath);
-        void writeToFile(const std::string filePath);  
-        void setVariable(const std::string var);  
-        void setVariable(const std::string var, const std::string val);     
-        std::string getVariable(const std::string var);
+        Config() {}
+        static Config ReadFromFile(const std::string& filePath);
+        void writeToFile(const std::string& filePath);  
+        void setVariable(std::string);  
+        void setVariable(const std::string& var, const std::string& val);     
+        std::string getVariable(const std::string& var);
 };
 
 
@@ -63,23 +60,31 @@ class MPConfig {
  * as well as the value passed.
  */
 class CliArg {
-    public:
-        CliArg(std::string name, bool isBool, bool (*validation)(std::string))
-            : name(name), isBool(isBool), validation(validation) {}
-        CliArg() {}
+public:
+    CliArg(const std::string& name, bool isBool, bool (*validation)(const std::string&))
+        : name(name), isBool(isBool), validation(validation) {}
+    CliArg() {}
 
-        std::string name;
-        bool isBool = false;
-        bool boolVal = false;
+    std::string name;
+    bool isBool = false;
+    bool boolVal = false;
 
-        int numVals;
-        int isInf = false;
+    int numVals;
+    int isInf = false;
 
-        std::vector<std::string> passedValue;
+    std::vector<std::string> passedValue;
 
-        // validate the quality of the passed value
-        bool (*validation)(std::string);
+    // validate the quality of the passed value
+    bool (*validation)(const std::string&);
 };
+
+// Validate strings passed into the CLI
+bool ValidateFilter(const std::string& arg);
+bool ValidateOrder(const std::string& arg);
+bool ValidateConfig(const std::string& arg);
+
+// Create global argument collector
+extern std::map<std::string, CliArg> ARGLIST;
 
 
 // All file formats supported by mpf
@@ -94,7 +99,7 @@ enum class AudioFormat {
  */
 class File {
     public:
-        File(std::string filePath)
+        File(const std::string& filePath)
             : filePath(filePath) {};
 
         std::string filePath;
@@ -118,76 +123,72 @@ public:
     AudioFile(std::string fp)
         : File(fp) {};
     AudioFormat getFormat();
-    std::string readTag(const std::string tagName);
+    std::string readTag(const std::string& tagName);
     void beginPlayback(double start);
     void readData();
     SDL_Surface* readImage();
 };
+
 
 /**
  * A wrapper for a vector of Files.
  * Can be filtered and ordered by ID3v2 tags using id3lib
  */
 class FilesList {
+private:
     std::vector<AudioFile> files;
-    static bool ValidateFile(std::string);
+    static bool ValidateFile(std::string&);
+    void applyFilterCmd(std::string, std::string, std::string);
 
-    public:
-        FilesList() {}
+public:
+    FilesList() {}
 
-        bool validateAllFiles();
-        AudioFile getFile(int pos);
-        void addFile(AudioFile);
-        void removeFile(AudioFile);
-        void applyFilter(std::string);
-        void applyFilterCmd(std::string, std::string, std::string);
-        void applyOrder(std::string);
-        void print();
-        std::vector<AudioFile>::iterator begin();
-        std::vector<AudioFile>::iterator end();
-        std::size_t size();
+    bool validateAllFiles();
+
+    AudioFile getFile(int pos);
+    void addFile(const AudioFile&);
+    void print();
+
+    void removeFile(const AudioFile&);
+    void applyFilter(const std::string&);
+    void applyOrder(const std::string&);
+
+    std::vector<AudioFile>::iterator begin();
+    std::vector<AudioFile>::iterator end();
+    std::size_t size();
 };
 
-
-typedef std::string Directory;
 
 class FileSystem {
-    public:
-        static FilesList GetAllFiles(Directory dir);
-        static bool ValidateDirectory(Directory dir);
+public:
+    static FilesList GetAllFiles(const std::string& dir);
+    static bool ValidateDirectory(const std::string& dir);
 };
-
-
-bool ValidateFilter(std::string arg);
-bool ValidateOrder(std::string arg);
-bool ValidateConfig(std::string arg);
-
-extern std::map<std::string, CliArg> ARGLIST;
 
 
 class AudioApp {
 protected:
-    double fProgress;
-    double fDuration;
+    enum class ACTIONS {
+        FORWARD, BACKWARD, PREV, NEXT, TOGGLE_PAUSE
+    };
 
     int FPS;
     bool isActive;
     bool musicPaused;
 
-    bool advanceFile();
-    void playAudio();
-    void pauseAudio();
+    bool executeAction(ACTIONS action);
     bool isPlayingAudio();
 
-    MPConfig config;
+    Config config;
     FilesList files;
-    int currentFile;
+    
 
     void filterFiles();
     void orderFiles();
+    virtual void run() = 0;
 
 public:
-    AudioApp(MPConfig config, FilesList files)
+    AudioApp(const Config& config, const FilesList& files)
         : config(config), files(files), isActive(false), musicPaused(false) {}
 };
 
@@ -207,36 +208,42 @@ private:
 
     void clear();
     void renderFrame();
+    void handleSdlEvent(SDL_Event& evt);
     void init();
 
+
 public:
-    GUI(MPConfig config, FilesList files, int FPS = 20)
+    GUI(const Config& config, const FilesList& files, const int FPS = 20)
         : FPS(FPS), AudioApp(config, files) {
-        currentFile = -1;
     }
 
     void run();
-    
+
     /**
      * Static graphics methods that draw to SDL_Rendereres
      * and rasterize various necessary GUI components (circles, rounded rects).
      * SDL_SetRenderDrawColor should be set before calling these.
      */
-    static void SDL_DrawCircle(SDL_Renderer*, const int, const int, const int);
+    class SDL_Button {
+        SDL_Button(void(*callback)(GUI));
+        void handleEvt(SDL_Event* evt);
+        void (*callback)(GUI*);
+    };
+
+    typedef struct SDL_Circle {
+        int x, y;
+        int r;
+    } SDL_Circle;
+
+    static void SDL_DrawCircle(SDL_Renderer*, const ::GUI::SDL_Circle*);
     static void SDL_DrawRoundedRect(SDL_Renderer*, const SDL_Rect*, const int);
 };
 
 
 class CLI : public AudioApp {
     public:
-        CLI(MPConfig config, FilesList files)
+        CLI(Config config, FilesList files)
             : AudioApp(config, files) {};
-};
-
-class SDL_Button {
-    SDL_Button(void(*callback)(GUI));
-    void handleEvt(SDL_Event* evt);
-    void (*callback)(GUI*);
 };
 
 #endif
