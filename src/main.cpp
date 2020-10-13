@@ -43,10 +43,10 @@ int main(int argc, char** argv) {
     const char *homedir;
     if ((homedir = getenv("HOME")) == NULL)
         homedir = getpwuid(getuid())->pw_dir;
-    std::string CONFIG_PATH = std::string(homedir) + "/.mpf.config";
+    std::string CONFIG_PATH = std::string(homedir) + "/.config/mpf/config";
 
     // Create a files list and configurations object
-    MPConfig config = MPConfig::ReadFromFile(CONFIG_PATH);
+    Config config = Config::ReadFromFile(CONFIG_PATH);
     FilesList files = FilesList();
 
     // Parse CLI arguments, add to music player configuration
@@ -64,7 +64,8 @@ int main(int argc, char** argv) {
                     i++; // increase arg count to check for vals
                     while (i != argc) {
                         // validate all passed values, add to array
-                        ARGLIST[arg.name].validation(argv[i]);
+                        std::string argname(argv[i]);
+                        ARGLIST[arg.name].validation(argname);
                         ARGLIST[arg.name].passedValue.push_back(argv[i]);
                         i++;
                     }
@@ -85,7 +86,8 @@ int main(int argc, char** argv) {
                             return 1;
                         }
                         else {
-                            ARGLIST[arg.name].validation(argv[i]);
+                            std::string argname(argv[i]);
+                            ARGLIST[arg.name].validation(argname);
                             ARGLIST[arg.name].passedValue.push_back(argv[i]);
                         }
                     }

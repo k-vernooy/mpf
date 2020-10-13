@@ -16,6 +16,7 @@
 using std::cout;
 using std::endl;
 
+
 bool operator== (const File& f1, const File& f2) {
     return f1.filePath == f2.filePath;
 }
@@ -35,12 +36,13 @@ std::string File::getFileName(bool stem) {
 }
 
 
-void FilesList::addFile(AudioFile f) {
+// --- FileList modification methods --- //
+
+void FilesList::addFile(const AudioFile& f) {
     files.push_back(f);
 }
 
-
-void FilesList::removeFile(AudioFile f) {
+void FilesList::removeFile(const AudioFile& f) {
     files.erase(std::remove(files.begin(), files.end(), f), files.end());
 }
 
@@ -50,10 +52,6 @@ AudioFile FilesList::getFile(int pos) {
 
 std::size_t FilesList::size() {
     return files.size();
-}
-
-std::string AudioFile::readTag(std::string tag) {
-    return "";
 }
 
 std::vector<AudioFile>::iterator FilesList::begin() {
@@ -120,7 +118,8 @@ void FilesList::applyFilterCmd(std::string lv, std::string rv, std::string compa
     return;
 }
 
-void FilesList::applyFilter(std::string filter) {
+
+void FilesList::applyFilter(const std::string& filter) {
     std::vector<std::string> cmds = Split(filter, ";");
     std::vector<std::string> separators = {
         "==", "<=", ">=", "<", ">"
@@ -144,7 +143,7 @@ void FilesList::applyFilter(std::string filter) {
     }
 }
 
-void FilesList::applyOrder(std::string orderCmd) {
+void FilesList::applyOrder(const std::string& orderCmd) {
     if (files.size() == 0) return;
     if (orderCmd == "shuffle") {
         // shuffle the `files` vector
@@ -169,13 +168,13 @@ void FilesList::print() {
 }
 
 
-FilesList FileSystem::GetAllFiles(Directory) {
+FilesList FileSystem::GetAllFiles(const std::string&) {
     FilesList files;
     // create boost path; iterate over files
     return files;
 }
 
 
-bool FileSystem::ValidateDirectory(Directory dir) {
+bool FileSystem::ValidateDirectory(const std::string&) {
     return true;
 }

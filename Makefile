@@ -13,7 +13,7 @@ BUILD = build
 SRC = src
 
 # object deps
-OBJECTS = main.o argparse.o filesystem.o musicplayer.o audiofile.o util.o gui.o
+OBJECTS = main.o validate.o filesystem.o config.o audiofile.o util.o audioapp.o gui.o
 OBJECT_OUTPUTS = $(patsubst %, $(BUILD)/%, $(OBJECTS))
 DEPENDS := $(patsubst %.o,%.d,$(OBJECTS))
 

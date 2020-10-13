@@ -10,6 +10,27 @@
 #include "../include/mpf.h"
 #include "../include/util.h"
 
+#include <taglib/fileref.h>
+#include <taglib/tag.h>
+#include <taglib/id3v2tag.h>
+#include <taglib/tpropertymap.h>
+
+
+std::string AudioFile::readTag(const std::string& tagname) {
+    TagLib::FileRef f(tagname.c_str());
+
+    if (!f.isNull() && f.tag()) {
+        TagLib::Tag *tag = f.tag();
+        TagLib::PropertyMap tags = f.file()->properties();
+
+        for (TagLib::PropertyMap::ConstIterator i = tags.begin(); i != tags.end(); ++i) {
+            Log(std::string(i->first.toCString()));
+        }
+    }
+
+    return "";
+}
+
 void AudioFile::readData() {
     data = Mix_LoadMUS(filePath.c_str()); 
     if (data == nullptr) {
@@ -17,12 +38,10 @@ void AudioFile::readData() {
     }
 }
 
-
 SDL_Surface* AudioFile::readImage() {
     const char* imagePath = this->readTag("URL").c_str();
     return IMG_Load(imagePath);
 }
-
 
 void AudioFile::beginPlayback(double start) {
     if (data == nullptr) readData();

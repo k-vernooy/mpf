@@ -1,22 +1,26 @@
+/****************************************
+ * @file                       config.cpp
+ * @author                      k-vernooy
+ * 
+ * Code for handling getting and setting
+ * of a music player data structure. Has
+ * read and write to file functionality.
+ ***************************************/
+
 #include <iostream>
 
 #include "../include/mpf.h"
 #include "../include/util.h"
 
-// Using SDL and standard IO
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-
-
 using std::cout;
 using std::endl;
 
-void MPConfig::setVariable(std::string var, std::string val) {
+
+void Config::setVariable(const std::string& var, const std::string& val) {
     VARIABLES[var] = val;
 }
 
-void MPConfig::setVariable(std::string assignment) {
+void Config::setVariable(std::string assignment) {
     std::string del = "=";
     int pos = assignment.find(del);
     std::string var = assignment.substr(0, pos);
@@ -26,11 +30,11 @@ void MPConfig::setVariable(std::string assignment) {
     VARIABLES[var] = assignment;
 }
 
-std::string MPConfig::getVariable(std::string var) {
+std::string Config::getVariable(const std::string& var) {
     return VARIABLES[var];
 }
 
-void MPConfig::writeToFile(std::string filepath) {
+void Config::writeToFile(const std::string& filepath) {
     std::string file;
     for (auto& pair : VARIABLES) {
         if (!pair.second.empty()) {
@@ -41,11 +45,11 @@ void MPConfig::writeToFile(std::string filepath) {
     WriteFile(file, filepath);
 }
 
-MPConfig MPConfig::ReadFromFile(std::string path) {
+Config Config::ReadFromFile(const std::string& path) {
     std::vector<std::string> lines = Split(ReadFile(path), "\n");
-    MPConfig config = MPConfig();
+    Config config = Config();
     
-    for (std::string line : lines) {
+    for (std::string& line : lines) {
         ValidateConfig(line);
         std::vector<std::string> splits = Split(line, "=");
         std::string varToSet = splits[0];
