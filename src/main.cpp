@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
         std::string defaultDir = config.getVariable("MUSIC_DIR");
         if (defaultDir.empty()) {
             Err("fatal: No files provided and no MUSIC_DIR set.");
-            Err("hint: Input file(s) or see `--config`");
+            Err("hint: Add input file(s) or see `--config`");
             return 1;
         }
         else {
@@ -145,6 +145,7 @@ int main(int argc, char** argv) {
                 files = FileSystem::GetAllFiles(defaultDir);
                 if (files.size() == 0) {
                     Err("fatal: No files in MUSIC_DIR");
+                    return 1;
                 }
             }
             else {
@@ -162,7 +163,7 @@ int main(int argc, char** argv) {
         config.setVariable("ORDER", ARGLIST["--order"].passedValue[0]);
 
     if (!ARGLIST["--no-gui"].boolVal) {
-        GUI gui = GUI(config, files, 30);
+        GUI gui = GUI(config, files, 50);
         gui.run();
     }
 }

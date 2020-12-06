@@ -200,6 +200,7 @@ public:
  */
 class GUI : public AudioApp {
 private:
+    TTF_Font* sans;
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Surface* screenSurface;
@@ -236,7 +237,7 @@ public:
     } SDL_Circle;
 
     static void SDL_DrawCircle(SDL_Renderer*, const ::GUI::SDL_Circle*);
-    static void SDL_DrawRoundedRect(SDL_Renderer*, const SDL_Rect*, const int);
+    static void SDL_DrawRoundedRect(SDL_Renderer*, const SDL_Rect*, int);
 };
 
 

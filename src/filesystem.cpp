@@ -168,9 +168,17 @@ void FilesList::print() {
 }
 
 
-FilesList FileSystem::GetAllFiles(const std::string&) {
+FilesList FileSystem::GetAllFiles(const std::string& d) {
     FilesList files;
-    // create boost path; iterate over files
+    boost::filesystem::directory_iterator end;
+
+    for (boost::filesystem::directory_iterator itr(d); itr != end; ++itr) {
+        if (boost::filesystem::is_regular_file(itr->path())) {
+            AudioFile f = AudioFile(itr->path().string());
+            files.addFile(f);
+        }
+    }
+    
     return files;
 }
 

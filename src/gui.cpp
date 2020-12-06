@@ -27,7 +27,12 @@ void GUI::SDL_DrawCircle(SDL_Renderer* renderer, const GUI::SDL_Circle* c) {
 }
 
 
-void GUI::SDL_DrawRoundedRect(SDL_Renderer* renderer, const SDL_Rect* rect, const int r) {
+void GUI::SDL_DrawRoundedRect(SDL_Renderer* renderer, const SDL_Rect* rect, int r) {
+    if (rect->h < r * 2) {
+        Err("Border radius too large, defaulting to half=" + std::to_string(rect->h / 2));
+        r = rect->h / 2;
+    }
+
     SDL_Circle tl, tr, bl, br;
     tl.x = rect->x + r;
     tl.y = rect->y + r;
@@ -93,10 +98,14 @@ void GUI::init() {
 
     renderer = SDL_CreateRenderer(window, -1, 0);
 
+    sans = TTF_OpenFont("assets/Hack.ttf", 18);
+
     if (window == nullptr) {
         Err("fatal: SDL_Window could not be created; " + std::string(SDL_GetError()));
         exit(1);
     }
+
+    SDL_SetWindowOpacity(window, 0.95);
 
     // Fill the surface with nullptr
     screenSurface = SDL_GetWindowSurface(window);
@@ -110,39 +119,35 @@ void GUI::clear() {
 
 void GUI::renderFrame() {
     // clear renderer
-    SDL_SetRenderDrawColor(renderer, 47, 68, 89, 255);
+    SDL_SetRenderDrawColor(renderer, 47, 68, 89, 0);
     SDL_RenderClear(renderer);
 
     // SDL_Circle c;
     // c.x = 50;
     // c.y = 50;
     // c.r = 30;
+    int windowWidth;
+    SDL_GetWindowSize(this->window, &windowWidth, nullptr);
+
+    std::string fileName = this->files.getFile(0).getFileName();
+    const char* text = fileName.c_str();
+    SDL_Color White = {255, 255, 255};
+    SDL_Surface* surfaceMessage = TTF_RenderText_Blended_Wrapped(sans, text, White, 500);
+    SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+ 
+    SDL_RenderCopy(renderer, Message, nullptr, nullptr);
+    SDL_FreeSurface(surfaceMessage);
+    // SDL_DestroyTexture(Message);
+
 
     SDL_Rect roundedRect;
-    roundedRect.h = 100;
-    roundedRect.w = 100;
-    roundedRect.x = 30;
-    roundedRect.y = 30;
+    roundedRect.h = 30;
+    roundedRect.w = windowWidth;
+    roundedRect.x = 0;
+    roundedRect.y = 20;
 
     SDL_SetRenderDrawColor(renderer, 2, 194, 251, 255);
-    SDL_DrawRoundedRect(renderer, &roundedRect, 20);
-
-    // std::string fileName = this->files.getFile(0).getFileName();
-    // const char* text = fileName.c_str();
-
-    // TTF_Font* Sans = TTF_OpenFont("assets/Hack.ttf", 18);
-    // SDL_Color White = {255, 255, 255};
-    // SDL_Surface* surfaceMessage = TTF_RenderText_Blended(Sans, text, White);
-    // SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
-
-    // SDL_Rect Message_rect; //create a rect
-    // Message_rect.x = 0;  //controls the rect's x coordinate 
-    // Message_rect.y = 0; // controls the rect's y coordinte
-    // TTF_SizeText(Sans, text, &Message_rect.w, &Message_rect.h);
-    // SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
-
-    // SDL_FreeSurface(surfaceMessage);
-    // SDL_DestroyTexture(Message);
+    SDL_DrawRoundedRect(renderer, &roundedRect, 15);
     SDL_RenderPresent(renderer);
 }
 
