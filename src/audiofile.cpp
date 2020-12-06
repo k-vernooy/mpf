@@ -23,9 +23,7 @@ std::string AudioFile::readTag(const std::string& tagname) {
         TagLib::Tag *tag = f.tag();
         TagLib::PropertyMap tags = f.file()->properties();
 
-        for (TagLib::PropertyMap::ConstIterator i = tags.begin(); i != tags.end(); ++i) {
-            Log(std::string(i->first.toCString()));
-        }
+        return std::string(tags[tagname].begin()->toCString());
     }
 
     return "";
